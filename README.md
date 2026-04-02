@@ -1,73 +1,101 @@
-# React + TypeScript + Vite
+# Cloudflare Image Optimization — Demo Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript SPA that demonstrates Cloudflare Image Optimization via a side-by-side comparison of an optimized image (served through a Cloudflare Worker) vs. the original.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Side-by-side comparison** — Optimized (Cloudflare Worker) vs. original image
+- **URL input** — Paste any allowed image URL and load it instantly
+- **"Try it out" demo** — One-click demo using sample NASA images
+- **Cloudflare Worker integration** — Passes image URLs to a worker that applies resizing, quality reduction, and WebP conversion
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + TypeScript (strict) |
+| Build tool | Vite 8 |
+| Styling | Tailwind CSS v4 + shadcn/ui (radix-luma, neutral) |
+| Icons | lucide-react |
+| Font | Inter Variable (@fontsource-variable/inter) |
+| Optimization | Cloudflare Worker (see `docs/worker_code.js`) |
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Install dependencies
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configure environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copy `example.env` to `.env` and fill in your Cloudflare Worker URL:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp example.env .env
 ```
+
+```env
+VITE_CLOUDFLARE_WORKER_BASE_URL="https://your-worker.your-subdomain.workers.dev"
+```
+
+### 3. Deploy the Cloudflare Worker
+
+Use the reference implementation in `docs/worker_code.js` as your Worker script. It handles:
+- Fetching images from allowed origins
+- Applying Cloudflare Image Resizing (width, height, quality, WebP format)
+- Caching optimized responses
+
+Update the `ALLOWED_ORIGINS` list in the worker to match the domains you want to support.
+
+### 4. Run the dev server
+
+```bash
+npm run dev
+```
+
+## Scripts
+
+```bash
+npm run dev       # Start dev server (HMR)
+npm run build     # TypeScript check + Vite production build
+npm run lint      # ESLint
+npm run preview   # Preview production build locally
+```
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `VITE_CLOUDFLARE_WORKER_BASE_URL` | Base URL of your deployed Cloudflare Worker |
+
+## How It Works
+
+1. User enters an image URL (must be from an allowed origin)
+2. The app builds two URLs:
+   - **Optimized:** `<WORKER_URL>?image=<url>&quality=90&width=400&height=300`
+   - **Original:** the raw image URL
+3. Both are displayed side-by-side using the `ImagePanel` component
+
+## Project Structure
+
+```
+src/
+  components/
+    ImagePanel.tsx    # Image display with label and placeholder fallback
+    ui/               # shadcn/ui components (do not hand-edit — use CLI)
+  lib/
+    utils.ts          # cn() + buildCfUrl() utilities
+  App.tsx             # Main UI: URL input, comparison panels, demo button
+docs/
+  worker_code.js      # Reference Cloudflare Worker script
+example.env           # Environment variable template
+```
+
+## Notes
+
+- No backend — purely frontend
+- shadcn/ui components are managed via the CLI: `npx shadcn@latest add <component>`
+- Never hand-edit files in `src/components/ui/`
+- Follows [SpaceDev](https://spacedev.io) internal standards

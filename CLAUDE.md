@@ -18,16 +18,23 @@ A React + TypeScript frontend project for demonstrating and working with Cloudfl
 
 ```
 src/
-  assets/             # Static assets
+  assets/             # Static assets (hero.png, react.svg, vite.svg)
   components/
+    ImagePanel.tsx    # Side-by-side image display component (label + image or placeholder)
     ui/               # shadcn/ui components (auto-generated, do not hand-edit)
+      badge.tsx
+      button.tsx
+      input.tsx
   lib/
-    utils.ts          # cn() utility (clsx + tailwind-merge)
-  App.tsx             # Root component
-  App.css             # App-level styles
+    utils.ts          # cn() utility (clsx + tailwind-merge) + buildCfUrl() helper
+  App.tsx             # Root component — URL input, image comparison UI, demo button
+  App.css             # App-level styles (layout sections)
   index.css           # Global CSS + Tailwind + shadcn CSS variables
   main.tsx            # Entry point
+docs/
+  worker_code.js      # Example Cloudflare Worker script (reference only, not imported)
 public/               # Static public assets
+example.env           # Example environment variables
 components.json       # shadcn/ui config (style: radix-luma, baseColor: neutral)
 ```
 
@@ -48,6 +55,21 @@ npm run build     # TypeScript check + Vite build
 npm run lint      # ESLint
 npm run preview   # Preview production build
 ```
+
+## Cloudflare Worker Integration
+
+- The app expects a `VITE_CLOUDFLARE_WORKER_BASE_URL` env var pointing to a deployed Cloudflare Worker
+- `buildCfUrl(workerBase, imageUrl)` in `src/lib/utils.ts` constructs the optimized image URL with query params: `image`, `quality=90`, `width=400`, `height=300`
+- The Worker reference implementation lives in `docs/worker_code.js` — it is not imported by the frontend, it is a standalone Cloudflare Worker script
+- Allowed image origins are enforced in the Worker (not the frontend): `images.pexels.com`, `stsaiintdev.blob.core.windows.net`, `svs.gsfc.nasa.gov`
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `VITE_CLOUDFLARE_WORKER_BASE_URL` | Base URL of the deployed Cloudflare Worker |
+
+Copy `example.env` → `.env` to get started.
 
 ## Notes
 
