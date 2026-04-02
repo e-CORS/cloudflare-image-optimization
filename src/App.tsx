@@ -6,8 +6,11 @@ import { ClipboardIcon } from "lucide-react";
 import ImagePanel from "./components/ImagePanel";
 import { buildCfUrl } from "./lib/utils";
 
+const DEFAULT_IMAGE_URL =
+  "https://images.pexels.com/photos/1519753/pexels-photo-1519753.jpeg";
+
 export default function App() {
-  const [inputUrl, setInputUrl] = useState("");
+  const [inputUrl, setInputUrl] = useState<string>("");
   const [activeUrl, setActiveUrl] = useState<string | null>(null);
   const [loadKey, setLoadKey] = useState(0);
 
@@ -20,6 +23,12 @@ export default function App() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleLoad();
+  };
+
+  const handleTryItOut = () => {
+    setInputUrl(DEFAULT_IMAGE_URL);
+    setActiveUrl(DEFAULT_IMAGE_URL);
+    setLoadKey((k) => k + 1);
   };
 
   return (
@@ -66,6 +75,13 @@ export default function App() {
               Load
             </Button>
           </div>
+          <Button
+            variant="ghost"
+            className="text-xs text-muted-foreground text-left"
+            onClick={handleTryItOut}
+          >
+            Try it out
+          </Button>
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
