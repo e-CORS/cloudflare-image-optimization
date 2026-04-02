@@ -1,121 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ClipboardIcon } from "lucide-react";
 
-function App() {
-  const [count, setCount] = useState(0)
+import ImagePanel from "./components/ImagePanel";
+import { buildCfUrl } from "./lib/utils";
+
+export default function App() {
+  const [inputUrl, setInputUrl] = useState("");
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const [loadKey, setLoadKey] = useState(0);
+
+  const handleLoad = () => {
+    const trimmed = inputUrl.trim();
+    if (!trimmed) return;
+    setActiveUrl(trimmed);
+    setLoadKey((k) => k + 1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleLoad();
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="w-full max-w-3xl flex flex-col gap-6">
+        <div className="border rounded-xl p-6 flex flex-col gap-4 bg-card shadow-sm">
+          <div className="flex gap-0 flex-1 min-h-[380px]">
+            <ImagePanel
+              key={`optimized-${loadKey}`}
+              label="with optimization"
+              src={activeUrl ? buildCfUrl(activeUrl) : null}
+              side="left"
+            />
+            <div className="w-px bg-border self-stretch mx-1" />
+            <ImagePanel
+              key={`original-${loadKey}`}
+              label="without optimization"
+              src={activeUrl}
+              side="right"
+            />
+          </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                placeholder="Enter image URL"
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="font-mono text-sm pr-9"
+              />
+              <button
+                type="button"
+                title="Paste from clipboard"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => {
+                  void navigator.clipboard.readText().then(setInputUrl);
+                }}
+              >
+                <ClipboardIcon className="size-4" />
+              </button>
+            </div>
+            <Button onClick={handleLoad} disabled={!inputUrl.trim()}>
+              Load
+            </Button>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <p className="text-xs text-muted-foreground text-center">
+          Cloudflare image optimization requires deployment behind a Cloudflare
+          zone with Image Resizing enabled.
+        </p>
+        <p className="text-xs text-muted-foreground text-center">
+          The optimized request is routed through{" "}
+          <code className="font-mono">{buildCfUrl("")}</code>.
+        </p>
+      </div>
+    </div>
+  );
 }
-
-export default App
